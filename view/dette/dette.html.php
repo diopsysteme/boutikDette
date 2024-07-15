@@ -8,14 +8,17 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100">
-
+<?php
+$client=$clients;
+// var_dump("<br>ddd",$client);
+?>
     <div class="container mx-auto p-6">
         <div class="bg-white shadow-md rounded my-6 p-6">
             <div class="flex flex-col md:flex-row md:justify-between items-center mb-6">
                 <div>
                     <h1 class="text-2xl font-bold mb-2">Client Information</h1>
-                    <p><strong>Name:</strong> John Doe</p>
-                    <p><strong>Phone:</strong> +1234567890</p>
+                    <p><strong>Name:</strong> <?=$client->prenom." ".  $client->nom?></p>
+                    <p><strong>Phone:</strong> <?=$client->telephone?></p>
                 </div>
                 <div class="mt-4 md:mt-0">
                     <form method="GET" action="">
@@ -46,21 +49,20 @@
                     <tbody>
                         <?php
                         // Sample data, replace this with actual database query
-                        $debts = [
-                            ['id' => 1, 'amount' => 100, 'paid' => 50, 'remaining' => 50],
-                            ['id' => 2, 'amount' => 200, 'paid' => 200, 'remaining' => 0],
-                            // Add more debts as needed
-                        ];
-
-                        foreach ($debts as $debt) {
+                        $debts =$dettes;
+                        // var_dump($debts);
+   
+                        foreach (
+                            $debts as $debt) {
+                                $rpay=$debt->montant-$debt->montantverse;
                             echo "<tr>";
-                            echo "<td class='py-2 px-4 border'>{$debt['id']}</td>";
-                            echo "<td class='py-2 px-4 border'>{$debt['amount']}</td>";
-                            echo "<td class='py-2 px-4 border'>{$debt['paid']}</td>";
-                            echo "<td class='py-2 px-4 border'>{$debt['remaining']}</td>";
-                            echo "<td class='py-2 px-4 border'><button class='bg-gray-500 text-white px-4 py-2 rounded'>Details</button></td>";
-                            echo "<td class='py-2 px-4 border'><button class='bg-green-500 text-white px-4 py-2 rounded'>Payments</button></td>";
-                            echo "<td class='py-2 px-4 border'><button class='bg-red-500 text-white px-4 py-2 rounded'>Pay</button></td>";
+                            echo "<td class='py-2 px-4 border'>{$debt->id}</td>";
+                            echo "<td class='py-2 px-4 border'>{$debt->montant}</td>";
+                            echo "<td class='py-2 px-4 border'>{$debt->montantverse}</td>";
+                            echo "<td class='py-2 px-4 border'>{$rpay}</td>";
+                            echo "<td class='py-2 px-4 border'><a href='/details/article/$debt->id'><button class='bg-gray-500 text-white px-4 py-2 rounded'>Details</button></a></td>";
+                            echo "<td class='py-2 px-4 border'><a href='/paiement/list/$debt->id'><button class='bg-green-500 text-white px-4 py-2 rounded'>Payments</button></a></td>";
+                            echo "<td class='py-2 px-4 border'><a href='/paiement/pay/$debt->id'><button class='bg-red-500 text-white px-4 py-2 rounded'>Pay</button></a></td>";
                             echo "</tr>";
                         }
                         ?>

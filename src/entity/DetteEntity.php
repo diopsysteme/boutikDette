@@ -15,6 +15,9 @@ class DetteEntity extends Entity
     private $observation;
     private $created_at;
     private $updated_at;
-    private $password;
+    private $montant;
+    private $idclient;
+    private $iduserquiafaitlavente;
+    private $montantverse;
    
 }

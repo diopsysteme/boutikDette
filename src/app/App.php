@@ -34,7 +34,7 @@ class App
     
             $dsn = "$sgbd:host=$host;port=$port;dbname=$dbname;charset=utf8";
             $this->database = new MysqlDatabase($dsn,$username,$password);
-        }
+        };
         return $this->database;
     }
 

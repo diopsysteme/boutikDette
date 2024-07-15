@@ -36,6 +36,24 @@ namespace Core;
 // }
 class Route
 {
+    private static  $sessionClass;
+    private static $fileClass;
+    private static $databaseClass;
+    private static $routeClass;
+    private static $modelClass;
+    private static $controllerClass;
+    private static $validatorClass;
+    
+    public function __construct($config)
+    {
+        $this->sessionClass = $config['application']['session'];
+        $this->fileClass = $config['application']['file'];
+        $this->databaseClass = $config['application']['database'];
+        $this->routeClass = $config['application']['route'];
+        $this->modelClass = $config['application']['model'];
+        $this->controllerClass = $config['application']['controller'];
+    }
+
     private static $routes = [];
 
     public static function get($route, $controllerAction)
@@ -48,8 +66,15 @@ class Route
         self::$routes['POST'][$route] = $controllerAction;
     }
 
-    public static function handleRequest()
+    public static function handleRequest($config)
     {
+        self::$sessionClass = $config['application']['session'];
+        self::$fileClass = $config['application']['file'];
+        self::$databaseClass = $config['application']['database'];
+        self::$routeClass = $config['application']['route'];
+        self::$modelClass = $config['application']['model'];
+        self::$controllerClass = $config['application']['controller'];
+        self::$validatorClass = $config['application']['validator'];
         $requestUri = self::cleanRequestUri($_SERVER['REQUEST_URI']);
         $requestMethod = $_SERVER['REQUEST_METHOD'];
 
@@ -88,7 +113,10 @@ class Route
 
     protected static function handleNotFound()
     {
-        $errorController = new ErrorController();
+        $session=Factory::instantiateClass(self::$sessionClass);
+        $validator=Factory::instantiateClass(self::$validatorClass);
+        // var_dump($session);
+        $errorController = new ErrorController($session, $validator);
         
     }
 
@@ -108,7 +136,12 @@ class Route
             return;
         }
 
-        $controllerInstance = $reflectionClass->newInstance();
+        
+        $session=Factory::instantiateClass(self::$sessionClass);
+        $validator=Factory::instantiateClass(self::$validatorClass);
+        // var_dump($session);
+        $controllerInstance = $reflectionClass->newInstance($session,$validator);
+        // var_dump($controllerInstance);
         $reflectionClass->getMethod($methodName)->invokeArgs($controllerInstance, $params);
     }
 

@@ -1,0 +1,13 @@
+controller:
+  clientController: \Controller\ClientController
+  detteController: \Controller\DetteController
+  paiementController: \Controller\PaiementController
+
+application:
+  session: \Core\Session
+  file: \Core\File
+  database: \Core\MysqlDatabase
+  route: \Core\Route
+  model: \Core\Model
+  controller: \Core\Controller
+  validator: \Core\Validator2

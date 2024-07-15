@@ -2,7 +2,7 @@
 $oldData = $_POST ?? [];
 if (isset($client)) {
     die();
-    echo $client;
+    // echo $client;
 }
 ?>
 <!DOCTYPE html>
@@ -35,7 +35,7 @@ if (isset($client)) {
             <!-- Formulaire Nouveau Client -->
             <div class="bg-white p-6 rounded-lg shadow-md">
                 <h2 class="text-xl font-semibold text-blue-500 mb-4">NOUVEAU CLIENT</h2>
-                <form action="<?= $_ENV["WEBROOT"] . 'client' ?>" method="post"  enctype="multipart/form-data">
+                <form action="<?= $_ENV["WEBROOT"] . 'client' ?>" method="post" enctype="multipart/form-data">
                     <div class="mb-4">
                         <label for="nom" class="block text-gray-700">Nom:</label>
                         <input type="text" id="nom" name="nom"
@@ -85,40 +85,48 @@ if (isset($client)) {
                         class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">Enregistrer</button>
                 </form>
             </div>
-            
+
             <!-- Suivi Dette -->
             <div class="bg-white p-6 rounded-lg shadow-md">
                 <h2 class="text-xl font-semibold text-blue-500 mb-4">SUIVI DETTE</h2>
                 <div class="mb-4">
-                    <form action="<?= $_ENV["WEBROOT"] . 'client' ?>" method="post" >
+                    <form action="<?= $_ENV["WEBROOT"] . 'client' ?>" method="post">
                         <input type="text" name="telephone" placeholder="Search"
-                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?= htmlspecialchars($oldData['telephone'] ?? '') ?>">
+                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value="<?= htmlspecialchars($oldData['telephone'] ?? '') ?>">
                         <button name="searchClient"
                             class="w-full mt-2 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">Search
                             by phone</button>
                     </form>
                 </div>
                 <div class="tabs flex space-x-4 mb-4">
-       
-             <button class="tab active">Client</button>
-      
-        <a href="">
-        <button class="rounded-lg text-white bg-blue-500 w-24  <?= $datad[0]->telephone ? '' : 'hidden' ?>" name="ajoutDette" value="<?= $datad[0]->telephone ?>"></button>
 
-        </a>
-             <button class="rounded-lg text-white bg-blue-500 w-24  <?= $datad[0]->telephone ? '' : 'hidden' ?>" name="ajoutDette" value="<?= $datad[0]->telephone ?>"></button>
-      
-       
-            <button name="listDette" class="rounded-lg bg-blue-500 w-24 text-white tab <?= $datad[0]->telephone ? '' : 'hidden' ?>" value="<?=$datad[0]->telephone?>">Dette</button>
-       
-    </div>
-                <?php if (isset($datad)): 
+
+
+
+
+
+                    <a href="/ajoutDette/<?= $datad[0]->telephone ?>"
+                        class="<?= $datad[0]->telephone ? '' : 'hidden ' ?>">
+                        <button class="rounded-lg text-white bg-blue-500 w-24" name="ajoutDette"
+                            value="<?= $datad[0]->telephone ?>">Nouvelle</button>
+                    </a>
+
+                    <a href="/dette/list/<?= $datad[0]->telephone ?>"
+                        class="<?= $datad[0]->telephone ? '' : 'hidden' ?>">
+                        <button name="listDette" class="rounded-lg bg-blue-500 w-24 text-white tab"
+                            value="<?= $datad[0]->telephone ?>">Dette</button>
+                    </a>
+
+
+                </div>
+                <?php if (isset($datad)):
                     // var_dump($datad);
-                    $client=$datad[0];
+                    $client = $datad[0];
 
-                        ?>
-                <div class="tab-content">
-                   
+                    ?>
+                    <div class="tab-content">
+
                         <div class="flex items-center mb-4">
                             <img src="<?= $client->photo ?>" alt="Client" class="rounded-full mr-4 w-24 h-24">
                             <div>

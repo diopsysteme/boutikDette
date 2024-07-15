@@ -4,17 +4,20 @@ namespace Core;
 
 class Controller
 {
-    protected $session;
+    protected Session $session;
     //Session 
     //layout 
     //validator 
     protected ?File $file;
     protected $authorize;
     protected $template="template" ;
-    protected ?Validator $controller;
+    protected ?Validator2 $validator;
 
-    public function __construct() {
-        $this->session = new Session();
+    public function __construct(Session $session,$validator) {
+        $this->session = $session;
+        $this->validator = $validator;
+
+        $this->session::start();
     }
     
     public function renderView($view, $data = [],$layout = null)
@@ -24,13 +27,28 @@ class Controller
         }
 
         ob_start();
-        var_dump("skd",$_ENV['VIEW'] . "{$view}.html.php");
-        
+        // var_dump($_ENV['VIEW'] . "{$view}.html.php");
         require_once $_ENV['VIEW'] . "{$view}.html.php";
         $content = ob_get_clean();
         require_once $_ENV['VIEW'] . "{$this->template}.html.php";
     }
-    
+    protected function articlesPanier(){
+        $articls=$this->session::get("articles");
+            $articles=[];
+            foreach($articls as $dd){
+                $articlee = "\Entity\ArticleEntity";
+                $articlee = new \ReflectionClass($articlee);
+                $art = $articlee->newInstance();
+                $art->unserialize($dd);   
+                $articles[]=$art->unserialize($dd);;
+            }
+            return $articles;
+    }
+    protected function redirect($url, $statusCode = 302)
+    {
+        header("Location: " . $url, true, $statusCode);
+        exit();
+    }
     //renderJson
     //fromArray
 }

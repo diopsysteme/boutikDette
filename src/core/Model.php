@@ -20,14 +20,14 @@ class Model
     protected function getTableName()
     {
         $class = (new ReflectionClass($this))->getShortName();
-        var_dump(strtolower(str_replace('Model', '', $class)).'s');
+        // var_dump(strtolower(str_replace('Model', '', $class)).'s');
 
         // die();
         return strtolower(str_replace('Model', '', $class).'s'); 
 
     }
 
-    protected function getEntityClass()
+    public function getEntityClass()
     {
         $class = (new ReflectionClass($this))->getShortName();
         $entityClass = "Entity\\" . str_replace('Model', 'Entity', $class); 
@@ -103,14 +103,9 @@ class Model
     {
         return $this->query("DELETE FROM {$this->table} WHERE id = :id", ['id' => $id]);
     }
-    // public function hasOne($what, $foreignKey, $localKey) {
-    //     $sql = "SELECT * FROM $what WHERE $foreignKey = :localKey limit 1";
-    //     var_dump(($what));
-    
-    //     return $this->query($sql, ['localKey' => $localKey]);
-    // }
+   
     protected function instantiateClass($className) {
-        var_dump($className);
+        // var_dump($className);
        
         try {
             $reflectionClass = new \ReflectionClass($className);
@@ -123,8 +118,7 @@ class Model
     public function hasMany($entityClass, $foreignKey, $localKey) {
         $entity = $this->instantiateClass($entityClass);
         $table = $entity->getTableName();
-        var_dump($table);
-       
+        // var_dump($table);
         $entityClass = $entity->getEntityClass();
         $sql = "SELECT * FROM $table WHERE $foreignKey = :localKey";
         return $this->query($sql, ['localKey' => $localKey], $entityClass);
@@ -141,9 +135,28 @@ class Model
     public function belongsToMany($entityClass, $foreignKey, $localKey, $pivotTable) {
         $entity = $this->instantiateClass($entityClass);
         $table = $entity->getTableName();
-        $entityClass = $entity::getEntityClass();
-        $sql = "SELECT * FROM $table INNER JOIN $pivotTable ON $pivotTable.$foreignKey = $table.id WHERE $pivotTable.$localKey = :localKey";
+        $entityClass = $entity->getEntityClass();
+        $entity2 = $this->instantiateClass($pivotTable);
+        $table2 = $entity2->getTableName();
+        // $entityClass2 = $entity2->getEntityClass();
+        $sql = "SELECT * FROM $table INNER JOIN $table2 ON $table2.idarticle = $table.id WHERE $table2.$foreignKey = :localKey";
+        // var_dump($sql);
         return $this->query($sql, ['localKey' => $localKey], $entityClass);
+    }
+
+    public function lastInsertId()
+    {
+        return $this->database->lastInsertId();
+    }
+    public function transaction($callback) {
+        try {
+            $this->database->beginTransaction();
+            $callback($this);
+            $this->database->commit();
+        } catch (\Exception $e) {
+            $this->database->rollBack();
+            throw $e;
+        }
     }
     // belongsTo
 

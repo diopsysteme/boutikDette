@@ -4,30 +4,83 @@ namespace Controller;
 
 use App\App;
 use Core\Controller;
-use Entity\ClientEntity;
-use Core\Validator;
 use Core\File;
+use Core\Validator;
+use Core\Validator2;
+use Entity\ClientEntity;
 use Model\DetteModel;
+
 class ClientController extends Controller
 {
     private $clientModel;
-    public function __construct()
+    private $articleModel;
+    public function __construct($session,$validator)
     {
+        parent::__construct($session,$validator);
         $this->clientModel = App::getInstance()->getModel("Client");
+        $this->articleModel = App::getInstance()->getModel("Article");
     }
 
-    public function listAdd(){
-        var_dump($_POST);
-        if(isset($_POST["ajoutDette"])){
-            $clients = $this->clientModel->searchByAttribute('telephone', $_POST["ajoutDette"], ClientEntity::class);
+    public function listAdd($num, $article = null)
+    {
+        $clients = $this->session::get("client");
+        $entity = $this->clientModel->getEntityClass();
+        $entityInstance = \Core\Factory::instantiateClass($entity);
+        $entityInstance->unserialize($clients);
 
-        }elseif(isset($_POST["ajoutProd"])){
+        if ($num != $entityInstance->telephone) {
+            echo "Forbiden";
+            die();
+        }
+        $panier = new \Entity\PanierEntity($entityInstance);
+        // var_dump($panier->serialize());
+        $articles = $this->articlesPanier();
+        $this->renderView('ajoutDette', ['clients' => $entityInstance, "article" => $article, 'articles' => $articles]);
+    }
+    public function ajoutPanier($id)
+    {
+        if (isset($_POST["searchProd"])) {
+            $article = $this->articleModel->searchByAttribute("libelle", $_POST["article_search"]);
+        } elseif (isset($_POST["addToCart"])) {
+            $articlee = "\Entity\ArticleEntity";
+            $articlee = new \ReflectionClass($articlee);
+            $art = $articlee->newInstance();
+            $art->setArticle($_POST["id"], $_POST["addToCart"], $_POST["quantity"], $_POST["pu"], $_POST["qtstock"]);
+            if ($this->session::get("articles") == null) {
+                $arts[] = $art->serialize();
+                $this->session::set("articles", $arts);
+            } else {
+
+                $arts = $this->session::get("articles");
+                // var_dump($arts);
+                $newline = true;
+                $artPans = $this->articlesPanier();
+                foreach ($artPans as &$artPanier) {
+                    if ($artPanier->id == $art->id) {
+                        $artPanier->quantitevendu += $art->quantitevendu;
+                        $newline = false;
+                        break;
+                    }
+                }
+                if ($newline) {
+                    $arts[] = $art->serialize();
+                    $this->session::set("articles", $arts);
+                } else {
+                    $arts2=[];
+                    foreach ($artPans as $artPanier2) {
+                        $arts2[] = $artPanier2->serialize();
+                    }
+                    $this->session::set("articles", $arts2);
+                    // var_dump($this->session::get("articles"));
+                }
+               
+            }
             echo "ajout";
         }
-        var_dump($clients);
-        $this->renderView('ajoutDette', ['clients' => $clients]);
-
+        $articles = $this->articlesPanier();
+        $this->listAdd($id, $article[0]);
     }
+
     public function searchClientByPhone($telephone)
     {
         $clients = $this->clientModel->searchByAttribute('telephone', $telephone, ClientEntity::class);
@@ -58,60 +111,89 @@ class ClientController extends Controller
             ];
             $img = $_FILES["filephoto"]["name"];
             $img_tmp = $_FILES["filephoto"]["tmp_name"];
-            // var_dump($img);
-            // var_dump($img_tmp);
-
-            $validator = new Validator($data,[
-                'nom' =>"required|unique",
-            ],[
-                
-            ]);
-            $validator->validateData();
-            // var_dump($validator);
-            
+        
+            // Define validation rules
+            $rules = [
+                'nom' => 'required|unique',
+                'prenom' => 'required',
+                'mail' => 'required|email',
+                'telephone' => 'required|phone',
+                'photo' => 'required|file'
+            ];
+        
+            // Optionally, you can define custom error messages
+            $customMessages = [
+                'nom' => [
+                    'required' => 'Le champ nom est requis.',
+                    'unique' => 'Le champ nom doit être unique.'
+                ],
+                'prenom' => [
+                    'required' => 'Le champ prénom est requis.'
+                ],
+                'mail' => [
+                    'required' => 'Le champ email est requis.',
+                    'email' => 'Veuillez entrer une adresse email valide.'
+                ],
+                'telephone' => [
+                    'required' => 'Le champ téléphone est requis.',
+                    'phone' => 'Veuillez entrer un numéro de téléphone valide.'
+                ],
+                'photo' => [
+                    'required' => 'Le champ photo est requis.',
+                    'file' => 'Le champ photo doit être un fichier valide.'
+                ]
+            ];
+        
+            // Validate data
+            $validator =$this->validator::validateData($data, $rules, $customMessages);
+            // var_dump($validator->passes());
             if ($validator->passes()) {
-                var_dump($validator->passes());
+                // var_dump($validator->passes());
                 $file = new File($_FILES["filephoto"], $_FILES["filephoto"]["name"], '/var/www/html/detteComposer/public/asset');
                 $uploadMessage = $file->upload();
-                // var_dump($uploadMessage);
-
-                
                 $this->createClient($data);
                 $this->renderView('dashboard');
             } else {
-            
+
                 $errors = $validator->errors();
+                // var_dump($errors);
                 $this->renderView('dashboard', ['errors' => $errors]);
             }
         } elseif (isset($_POST['searchClient'])) {
             $datad = $this->clientModel->infosClientDebt($_POST['telephone']);
 
             if (!empty($datad)) {
+                $this->session::set("client", $datad[0]->serialize());
+                // var_dump("sss<br>", $this->session::get("client"));
                 $clientInfo = $datad[0];
-                var_dump($datad[0]->id);
-                $dd=$this->clientModel->belongsTo(DetteModel::class, "idclient",$datad[0]->id);
-                var_dump($dd);
+                // var_dump($datad[0]->id);
+                $dd = $this->clientModel->belongsTo(DetteModel::class, "idclient", $datad[0]->id);
+                // var_dump($dd);
 
-              
                 $this->renderView('dashboard', ["datad" => $datad]);
             } else {
                 $this->renderView('dashboard', ["client" => null]);
             }
+        } elseif (isset($_POST["ajoutDette"])) {
 
-        }elseif(isset($_POST["ajoutDette"])) {
-
-        $clients = $this->clientModel->searchByAttribute('telephone', $_POST["ajoutDette"], ClientEntity::class);
-        $this->renderView('ajoutDette', ['clients' => $clients]);
+            $clients = $this->clientModel->searchByAttribute('telephone', $_POST["ajoutDette"], ClientEntity::class);
+            $this->renderView('ajoutDette', ['clients' => $clients]);
         }
     }
 
-    public function listdette($var){
-        var_dump($var);
-        var_dump("kdjksd");
-      
-        $clients = $this->clientModel->all();
-        
-        $this->renderView('dette/dette', ['clients' => $clients]);
+    public function listdette($var)
+    {
+        // var_dump($var);
+        $clients = $this->session::get("client");
+        $entity = $this->clientModel->getEntityClass();
+        $entityInstance = \Core\Factory::instantiateClass($entity);
+        $entityInstance->unserialize($clients);
+        if (!$clients) {
+            $this->renderView('error');
+            return;
+        }
+        $dettes = $this->clientModel->hasMany(DetteModel::class, "idclient", $entityInstance->id);
+        // var_dump($dettes);
+        $this->renderView('dette/dette', ['clients' => $entityInstance, "dettes" => $dettes]);
     }
-    
 }

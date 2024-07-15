@@ -32,4 +32,11 @@ class Session
     {
         session_destroy();
     }
+    public static function unset($key,$key1=null){
+        if($key1!=null){
+            unset($_SESSION[$key][$key1]);
+        }else{
+            unset($_SESSION[$key]);
+        }
+    }
 }

@@ -8,7 +8,7 @@ use Core\Validator;
 class ExoController extends Controller{
     public function store($id, $date1)
     {
-        var_dump($id);
-        var_dump($date1);
+        // var_dump($id);
+        // var_dump($date1);
     }
 }
