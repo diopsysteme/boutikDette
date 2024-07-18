@@ -1,7 +1,7 @@
 <?php
 namespace Core;
 
-class Validator2
+class Validator3
 {
     private $data;
     private $errors = [];
@@ -29,13 +29,11 @@ class Validator2
         'file' => 'The :field field must be a valid file type.'
     ];
 
-    public function __construct($data = [])
-    {
-        $this->data = $data;
-    }
+    
 
     public function validate($field, $rules, $customMessages = [])
     {
+        var_dump($field, true);
         $value = isset($this->data[$field]) ? $this->data[$field] : null;
         $rules = explode('|', $rules);
 
@@ -60,7 +58,6 @@ class Validator2
     private function addError($field, $message)
     {
         $this->errors[$field][] = $message;
-        // Assuming Session::set method exists and is autoloaded
         Session::set("error", $message, $field);
     }
 
@@ -76,6 +73,8 @@ class Validator2
 
     private function validateRequired($value)
     {
+        var_dump("dsdsd",$value);
+        var_dump(!empty($value));
         return !empty($value);
     }
 
@@ -127,12 +126,13 @@ class Validator2
         return preg_match('/^\d+$/', $num);
     }
 
-    public function validateData($data, $rules, $messages = [])
+    public static function validateData($data, $rules, $messages = [])
     {
-        $this->data = $data;
+        $validator = new self($data);
+        var_dump($data);
         foreach ($rules as $field => $ruleString) {
-            $this->validate($field, $ruleString, $messages[$field] ?? []);
+            $validator->validate($field, $ruleString, $messages[$field] ?? []);
         }
-        return $this;
+        return $validator;
     }
 }

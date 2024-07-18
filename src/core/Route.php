@@ -138,9 +138,10 @@ class Route
 
         
         $session=Factory::instantiateClass(self::$sessionClass);
+        $file=Factory::instantiateClass(self::$fileClass);
         $validator=Factory::instantiateClass(self::$validatorClass);
         // var_dump($session);
-        $controllerInstance = $reflectionClass->newInstance($session,$validator);
+        $controllerInstance = $reflectionClass->newInstance($session,$validator,$file);
         // var_dump($controllerInstance);
         $reflectionClass->getMethod($methodName)->invokeArgs($controllerInstance, $params);
     }

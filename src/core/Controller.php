@@ -11,12 +11,12 @@ class Controller
     protected ?File $file;
     protected $authorize;
     protected $template="template" ;
-    protected ?Validator2 $validator;
+    protected $validator;
 
-    public function __construct(Session $session,$validator) {
+    public function __construct(Session $session,$validator,$file) {
         $this->session = $session;
         $this->validator = $validator;
-
+        $this->file = $file;
         $this->session::start();
     }
     

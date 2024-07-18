@@ -1,6 +1,6 @@
 <?php
-// ini_set('display_errors', 1);
-// error_reporting(E_ALL);
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 include  "../bootstrap.php";
 
 // use Core\Route;
@@ -24,6 +24,8 @@ Route::get('/client', ['controller' => 'ClientController', 'method' => 'index'])
 Route::post('/client', ['controller' => 'ClientController', 'method' => 'store']);
 Route::post('/ajoutDette/#id', ['controller' => 'ClientController', 'method' => 'ajoutPanier']);
 Route::get('/dette/list/#id', ['controller' => 'ClientController', 'method' => 'listdette']);
+Route::post('/dette/list/#id', ['controller' => 'DetteController', 'method' => 'filtrePaginate']);
+
 Route::get('/ajoutDette/#id', ['controller' => 'ClientController', 'method' => 'listAdd']);
 Route::get('/paiement/list/#id', ['controller' => 'DetteController', 'method' => 'listPayments']);
 Route::get('/paiement/pay/#id', ['controller' => 'DetteController', 'method' => 'formpayer']);

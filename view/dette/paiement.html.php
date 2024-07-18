@@ -19,7 +19,7 @@
             <h2 class="text-xl font-semibold mb-4">Debt Information</h2>
             <p><strong>Total Debt Amount:</strong> <?=$dette->montant?></p>
             <p><strong>Amount Paid:</strong> <?=$dette->montantverse?></p>
-            <p><strong>Remaining Amount:</strong> <?=intval($dette->montant)-intval($dette->montantverse)?></p>
+            <p><strong>Remaining Amount:</strong> <?=floatval($dette->montant)-floatval($dette->montantverse)?></p>
         </div>
         <div class="bg-white shadow-md rounded-lg p-6">
             <form action="" method="post">
@@ -30,8 +30,8 @@
                             <p class="text-red-500 text-sm"><?= $error ?></p>
                         <?php endif; ?>
                 </div>
-                <input type="hidden" name="ramount" value="<?=intval($dette->montant)-intval($dette->montantverse)?>">
-                <input type="hidden" name="amountp" value="<?=intval($dette->montantverse)?>">
+                <input type="hidden" name="ramount" value="<?=floatval($dette->montant)-floatval($dette->montantverse)?>">
+                <input type="hidden" name="amountp" value="<?=floatval($dette->montantverse)?>">
                 <div class="flex items-center justify-between">
                     <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
                         Pay

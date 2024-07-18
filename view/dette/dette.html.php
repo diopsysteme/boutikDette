@@ -21,7 +21,7 @@ $client=$clients;
                     <p><strong>Phone:</strong> <?=$client->telephone?></p>
                 </div>
                 <div class="mt-4 md:mt-0">
-                    <form method="GET" action="">
+                    <form method="post" action="">
                         <label for="filter" class="mr-2">Filter:</label>
                         <select id="filter" name="filter" class="border rounded p-2">
                             <option value="all">All Debts</option>
@@ -69,11 +69,16 @@ $client=$clients;
                     </tbody>
                 </table>
             </div>
-
+            <!-- <?php
+            ?> -->
             <div class="flex justify-between items-center mt-6">
-                <button class="bg-blue-500 text-white px-4 py-2 rounded">Previous</button>
+                <form action="" method="post">
+                <button name="page" value="<?=$prev??1?>" class="bg-blue-500 text-white px-4 py-2 rounded">Previous</button>
+                </form>
                 <span>Page 1 of 10</span>
-                <button class="bg-blue-500 text-white px-4 py-2 rounded">Next</button>
+                <form action="" method="post">
+                <button name="page" value="<?=$suiv??2?>" class="bg-blue-500 text-white px-4 py-2 rounded">Next</button>
+                </form>
             </div>
         </div>
     </div>

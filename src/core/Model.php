@@ -23,16 +23,15 @@ class Model
         // var_dump(strtolower(str_replace('Model', '', $class)).'s');
 
         // die();
-        return strtolower(str_replace('Model', '', $class).'s'); 
+        return strtolower(str_replace('Model', '', $class) . 's');
 
     }
 
     public function getEntityClass()
     {
         $class = (new ReflectionClass($this))->getShortName();
-        $entityClass = "Entity\\" . str_replace('Model', 'Entity', $class); 
-        
-        
+        $entityClass = "Entity\\" . str_replace('Model', 'Entity', $class);
+
         if (!class_exists($entityClass)) {
             throw new \Exception("Entity class $entityClass not found.");
         }
@@ -67,7 +66,7 @@ class Model
 
     public function save($data)
     {
-       
+
         $id = $data['id'] ?? null;
         if ($id) {
             return $this->update($id, $data);
@@ -85,7 +84,7 @@ class Model
         return $this->query($sql, $data);
     }
 
-    protected  function update($id, $data)
+    protected function update($id, $data)
     {
         $columns = '';
         foreach ($data as $key => $value) {
@@ -103,10 +102,11 @@ class Model
     {
         return $this->query("DELETE FROM {$this->table} WHERE id = :id", ['id' => $id]);
     }
-   
-    protected function instantiateClass($className) {
+
+    protected function instantiateClass($className)
+    {
         // var_dump($className);
-       
+
         try {
             $reflectionClass = new \ReflectionClass($className);
             return $reflectionClass->newInstance($this->database);
@@ -115,7 +115,8 @@ class Model
         }
     }
 
-    public function hasMany($entityClass, $foreignKey, $localKey) {
+    public function hasMany($entityClass, $foreignKey, $localKey)
+    {
         $entity = $this->instantiateClass($entityClass);
         $table = $entity->getTableName();
         // var_dump($table);
@@ -124,15 +125,17 @@ class Model
         return $this->query($sql, ['localKey' => $localKey], $entityClass);
     }
 
-    public function belongsTo($entityClass, $foreignKey, $localKey) {
+    public function belongsTo($entityClass, $foreignKey, $localKey)
+    {
         $entity = $this->instantiateClass($entityClass);
         $table = $entity->getTableName();
         $entityClass = $entity->getEntityClass();
         $sql = "SELECT * FROM $table WHERE $foreignKey = :localKey LIMIT 1";
-        return $this->query($sql, ['localKey' => $localKey],  $entityClass);
+        return $this->query($sql, ['localKey' => $localKey], $entityClass);
     }
 
-    public function belongsToMany($entityClass, $foreignKey, $localKey, $pivotTable) {
+    public function belongsToMany($entityClass, $foreignKey, $localKey, $pivotTable)
+    {
         $entity = $this->instantiateClass($entityClass);
         $table = $entity->getTableName();
         $entityClass = $entity->getEntityClass();
@@ -148,7 +151,8 @@ class Model
     {
         return $this->database->lastInsertId();
     }
-    public function transaction($callback) {
+    public function transaction($callback)
+    {
         try {
             $this->database->beginTransaction();
             $callback($this);
@@ -158,21 +162,45 @@ class Model
             throw $e;
         }
     }
+    public function filterAndPaginate($filter,$id, $offset=null, $pageSize=null)
+    {
+        // var_dump($offset, $pageSize);
+        // Construire la requête SQL avec les filtres
+        $sql = "SELECT * FROM $this->table WHERE idclient=:idclient ";
+        if ($filter == "all") {
+            $sql .= "";
+        } elseif ($filter == "unpaid") {
+            $sql .= " and montant > montantverse";
+        } elseif ($filter == "paid") {
+            $sql .= "and montant = montantverse";
+        }
+if ($offset == null&& $pageSize == null) {
+    echo"dfdfd";
+    $sql .= "";
+}else{
+    echo"dfdfd22";
+
+    $sql .= " LIMIT " . intval($offset) . ", " . intval($pageSize);
+
+}
+        $arr=[
+            "idclient"=>$id,
+            ];
+var_dump($sql);
+            return $this->query($sql, $arr, $this->getEntityClass());
+    }
+
     // belongsTo
 
-
-    //hasOne  
+    //hasOne
     //hasOneThrough
-
 
     //hasManyThrough
     //belongsToManyThrough
-    
+
     //hasMany
     //belongsTo
     //belongsToMany
     //transaction
-
-
 
 }

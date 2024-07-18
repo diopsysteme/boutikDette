@@ -16,9 +16,9 @@ class DetteController extends Controller{
     private $paiementModel;
     private $dettearticleModel;
     private $articleModel;
-    public function __construct($session,$validator)
+    public function __construct($session,$validator,$file)
     {
-        parent::__construct($session,$validator);
+        parent::__construct($session,$validator,$file);
         $this->paiementModel = App::getInstance()->getModel("Paiement");
         $this->detteModel = App::getInstance()->getModel("Dette");
         $this->clientModel = App::getInstance()->getModel("Client");
@@ -63,8 +63,6 @@ class DetteController extends Controller{
         $entity = $this->clientModel->getEntityClass();
         $entityInstance = \Core\Factory::instantiateClass($entity);
         $entityInstance->unserialize($clients);
-        // var_dump("<br>shdjshdjsh",$articles);
-        // die();
         $totalDebt=0;
         foreach ($articles as $article) {
             $quantitySold = (int) $article->quantitevendu;
@@ -101,9 +99,9 @@ class DetteController extends Controller{
     public function payer($id){
         
         // var_dump($_POST);
-        $amount=(int)$_POST["amount"];
-        $ramount=(int)$_POST["ramount"];
-        $amountp=(int)$_POST["amountp"];
+        $amount=(float)$_POST["amount"];
+        $ramount=(float)$_POST["ramount"];
+        $amountp=(float)$_POST["amountp"];
         if($amount>$ramount || $ramount-$amount==$ramount){
             if($ramount==0)
             $error="la dette est deja soldée";
@@ -115,12 +113,71 @@ class DetteController extends Controller{
             $this->formpayer($id,$error);
             return;
         }
+        $dette = (object) [
+            'montant' => $ramount+$amountp,
+            "montantRestant"=>$ramount-$amount,
+            "amountPaid"=>$amount+$amountp,
+        ];
+        
+        $paiement = (object) [
+            'montant' =>$amount,
+            'date' => date('Y-m-d'),
+        ];
+        $clients = $this->session::get("client");
+        $entity = $this->clientModel->getEntityClass();
+        $entityInstance = \Core\Factory::instantiateClass($entity);
+        $entityInstance->unserialize($clients);
+        $pdfPath = $this->file->paymentReceipt($entityInstance, $dette, $paiement);
+
         $data=["iddette"=>$id,"montantverse"=>$amount];
         $this->paiementModel->save($data);
         $data=["id"=>$id,"montantverse"=>$amount+$amountp];
         $this->detteModel->save($data);
         $this->redirect("/dette/list/$id");
 
+    }
+    public function filtrePaginate(){
+        if(isset($_POST["filter"]))
+        $this->session::set("filtre",$_POST["filter"]);
+       
+
+        var_dump($_POST);
+
+        $clients = $this->session::get("client");
+        $entity = $this->clientModel->getEntityClass();
+        $entityInstance = \Core\Factory::instantiateClass($entity);
+        $entityInstance->unserialize($clients);
+
+        $filters = $this->session::get("filtre");
+
+        $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
+        $pageSize = isset($_POST['pageSize']) ? intval($_POST['pageSize']) :2;
+        $offset = ($page - 1) * $pageSize;
+        (int)$prev = ($page > 1) ? $page - 1 : 1;
+        // var_dump($offset, $pageSize, $prev);
+    $call = $this->detteModel->filterAndPaginate($filters, $entityInstance->id, $offset, $pageSize);
+    $call2 = $this->detteModel->filterAndPaginate($filters, $entityInstance->id);
+    $possible=ceil(count($call2)/$pageSize);
+    $suiv = ($page < $possible) ? $page + 1 : $possible;
+
+    $this->renderView('dette/dette', ['clients' => $entityInstance, "dettes" => $call,"prev"=>$prev,"suiv"=> $suiv]);
+
+        
+    }
+    public function listdette($var)
+    {
+        // var_dump($var);
+        $clients = $this->session::get("client");
+        $entity = $this->clientModel->getEntityClass();
+        $entityInstance = \Core\Factory::instantiateClass($entity);
+        $entityInstance->unserialize($clients);
+        if (!$clients) {
+            $this->renderView('error');
+            return;
+        }
+        $dettes = $this->clientModel->hasMany(DetteModel::class, "idclient", $entityInstance->id);
+        // var_dump($dettes);
+        $this->renderView('dette/dette', ['clients' => $entityInstance, "dettes" => $dettes]);
     }
     public function listArticle($id){
         // var_dump($id);

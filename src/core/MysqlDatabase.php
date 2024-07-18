@@ -19,6 +19,8 @@ class MysqlDatabase
     public function query($sql, $params = [], $fetchMode = PDO::FETCH_ASSOC, $fetchClass = null)
     {
         $stmt = $this->pdo->prepare($sql);
+        var_dump($stmt);
+        var_dump($params);
         $stmt->execute($params);
 
         if ($fetchClass) {

@@ -14,9 +14,9 @@ class ClientController extends Controller
 {
     private $clientModel;
     private $articleModel;
-    public function __construct($session,$validator)
+    public function __construct($session,$validator,$file)
     {
-        parent::__construct($session,$validator);
+        parent::__construct($session,$validator,$file);
         $this->clientModel = App::getInstance()->getModel("Client");
         $this->articleModel = App::getInstance()->getModel("Article");
     }
@@ -107,14 +107,15 @@ class ClientController extends Controller
                 'telephone' => $_POST['telephone'],
                 'photo' => $_FILES["filephoto"]["name"],
                 "password" => password_hash("Passer123", PASSWORD_DEFAULT),
-                "observation" => "Nouveau client",
+                "observation" => "Nouveau client"
             ];
+            // var_dump($data);
             $img = $_FILES["filephoto"]["name"];
             $img_tmp = $_FILES["filephoto"]["tmp_name"];
         
             // Define validation rules
             $rules = [
-                'nom' => 'required|unique',
+                'nom' => 'required',
                 'prenom' => 'required',
                 'mail' => 'required|email',
                 'telephone' => 'required|phone',
@@ -145,18 +146,19 @@ class ClientController extends Controller
             ];
         
             // Validate data
-            $validator =$this->validator::validateData($data, $rules, $customMessages);
+            $validator =$this->validator->validateData($data, $rules,$customMessages);
             // var_dump($validator->passes());
             if ($validator->passes()) {
                 // var_dump($validator->passes());
-                $file = new File($_FILES["filephoto"], $_FILES["filephoto"]["name"], '/var/www/html/detteComposer/public/asset');
-                $uploadMessage = $file->upload();
+                
+                $uploadMessage = $this->file->upload($_FILES["filephoto"],"photo".time().".jpg");
+                $data["photo"]="photo".time().".jpg";
                 $this->createClient($data);
                 $this->renderView('dashboard');
             } else {
 
                 $errors = $validator->errors();
-                // var_dump($errors);
+                 var_dump($errors);
                 $this->renderView('dashboard', ['errors' => $errors]);
             }
         } elseif (isset($_POST['searchClient'])) {
